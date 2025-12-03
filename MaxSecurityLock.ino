@@ -1,9 +1,11 @@
+#include "pinout.h"
+
 constexpr uint8_t COLUMNS = 2;
 constexpr uint8_t ROWS = 2;
-constexpr uint8_t pinColumn1 = 10;
-constexpr uint8_t pinColumn2 = 9;
-constexpr uint8_t pinRow1 = 21;
-constexpr uint8_t pinRow2 = 20;
+constexpr uint8_t pinColumn1 = PIN_COL_1;
+constexpr uint8_t pinColumn2 = PIN_COL_2;
+constexpr uint8_t pinRow1 = PIN_ROW_1;
+constexpr uint8_t pinRow2 = PIN_ROW_2;
 const int columnPins[COLUMNS] = {pinColumn1, pinColumn2};
 const int rowPins[ROWS] = {pinRow1,pinRow2};
 const int keypadValues[ROWS][COLUMNS] = {{1, 2}, {3, 4}};
