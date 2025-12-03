@@ -1,14 +1,12 @@
-constexpr uint8_t COLUMNS = 3;
-constexpr uint8_t ROWS = 3;
-constexpr uint8_t column1 = 9;
-constexpr uint8_t column2 = 8;
-constexpr uint8_t column3 = 7;
-constexpr uint8_t row1 = 10;
-constexpr uint8_t row2 = 20;
-constexpr uint8_t row3 = 21;
-const int columnPins[COLUMNS] = {column1, column2, column3};
-const int rowPins[ROWS] = {row1, row2, row3};
-const int keypad[ROWS][COLUMNS] = {{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+constexpr uint8_t COLUMNS = 2;
+constexpr uint8_t ROWS = 2;
+constexpr uint8_t pinColumn1 = 10;
+constexpr uint8_t pinColumn2 = 9;
+constexpr uint8_t pinRow1 = 21;
+constexpr uint8_t pinRow2 = 20;
+const int columnPins[COLUMNS] = {pinColumn1, pinColumn2};
+const int rowPins[ROWS] = {pinRow1,pinRow2};
+const int keypadValues[ROWS][COLUMNS] = {{1, 2}, {3, 4}};
 bool keypadStates[ROWS][COLUMNS];
 
 void setup() {
@@ -37,7 +35,6 @@ If a row turns LOW as well we can pinpoint button.
 */
 void loop() {
   updateKeypadStates();
-  Serial.println(keypad[r][c]);
   delay(10);
 }
 
@@ -48,6 +45,7 @@ void updateKeypadStates() {
     for (int r = 0; r < ROWS; r++) {
       if (digitalRead(rowPins[r]) == LOW) {
         keypadStates[r][c] = HIGH;
+        Serial.println(keypadValues[r][c]);
       } else keypadStates[r][c] = LOW;
     }
     pinMode(columnPins[c], INPUT_PULLUP);
