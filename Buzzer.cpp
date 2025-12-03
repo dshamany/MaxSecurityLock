@@ -14,7 +14,7 @@ void Buzzer::turnOff() {
   digitalWrite(_pin, _state);
 }
 
-void Buzzer::buzzFor(uint16_t duration) {
+void Buzzer::turnOnFor(uint16_t duration) {
   this->turnOn();
   _timerOn = true;
   _timeOff = millis() + duration;

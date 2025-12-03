@@ -8,7 +8,7 @@ class Buzzer {
   bool _timerOn;
 public:
   Buzzer(uint8_t pin);
-  void buzzFor(uint16_t duration);
+  void turnOnFor(uint16_t duration);
   void turnOn();
   void turnOff();
   void toggle();
