@@ -6,6 +6,7 @@ constexpr uint8_t pinRow1 = 21;
 constexpr uint8_t pinRow2 = 20;
 const int columnPins[COLUMNS] = {pinColumn1, pinColumn2};
 const int rowPins[ROWS] = {pinRow1,pinRow2};
+const int pins[ROWS][COLUMNS] = {{pinColumn1, pinColumn2}}
 const int keypadValues[ROWS][COLUMNS] = {{1, 2}, {3, 4}};
 bool keypadStates[ROWS][COLUMNS];
 
