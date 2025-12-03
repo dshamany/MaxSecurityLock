@@ -1,3 +1,6 @@
+#include <GawiButtons>
+
+#include "KeyLock.h"
 #include "pinout.h"
 
 constexpr uint8_t COLUMNS = 2;
@@ -23,9 +26,14 @@ void setup() {
 
   for (int c = 0; c < COLUMNS; c++) {
     for (int r = 0; r < ROWS; r++) {
-      keypadStates[r][c] = LOW;
+      keypadStates[r][c] = HIGH;
     }
   }
+
+  const int passcode_length = 4;
+  int passcode[] = { 1, 2, 3, 4, -1, -1, -1, -1 };
+  KeyLock lock(passcode, passcode_length);
+  lock.debug();
 
   Serial.println("BOOT!");
 }
@@ -46,9 +54,10 @@ void updateKeypadStates() {
     digitalWrite(columnPins[c], LOW);
     for (int r = 0; r < ROWS; r++) {
       if (digitalRead(rowPins[r]) == LOW) {
-        keypadStates[r][c] = HIGH;
+        keypadStates[r][c] = LOW; // This is the button that is pressed
         Serial.println(keypadValues[r][c]);
-      } else keypadStates[r][c] = LOW;
+        
+      } else keypadStates[r][c] = HIGH;
     }
     pinMode(columnPins[c], INPUT_PULLUP);
   }
