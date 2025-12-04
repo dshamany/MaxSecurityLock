@@ -27,7 +27,7 @@ enum Mode {
 };
 
 char passcode[PASSCODE_MAX_LENGTH] = { '1', '2', '3', '4', ' ', ' ', ' ', ' ' };
-Mode currentMode = Mode::LOCKED;
+Mode currentMode = Mode::SET;
 KeyLock keylock(passcode, passcodeLength);
 
 bool printedDebug = false;
@@ -36,6 +36,11 @@ void setup() {
   Serial.begin(9600);
   delay(100);
   Serial.println("BOOT!");
+
+  if (currentMode == Mode::SET) {
+    Serial.println(" ");
+    Serial.println("## Set Password ##");
+  }
 }
 
 /*
@@ -47,14 +52,6 @@ void loop() {
   updateKeypadStates();
 
   delay(10);
-
-
-  // This is because the code below doesn't work in setup
-  if (!printedDebug) {
-    KeyLock keylock(passcode, passcodeLength);
-    keylock.debug();
-    printedDebug = true;
-  }
 }
 
 void updateKeypadStates() {
@@ -62,11 +59,11 @@ void updateKeypadStates() {
   if (key) {
     if (key >= '0' && key <= '9' && passcodeIdx < 10) {
       digits[passcodeIdx++] = key;
-      Serial.print("Digit: ");
-      Serial.println(key);
+      // Serial.print("Digit: ");
+      // Serial.println(key);
     } else if (key == '#') {
       digits[passcodeIdx] = '\0';
-      Serial.print("Array: ");
+      // Serial.print("Array: ");
       Serial.println(digits);
       passcodeIdx = 0;
     } else if (key == '*') {
@@ -75,20 +72,24 @@ void updateKeypadStates() {
     }
   }
 
-  if (passcodeIdx == passcodeLength) {
-    const bool isMatch = keylock.passcodeMatch(digits);
-
-    // printout of current passcode
-    for (int i = 0; i < passcodeLength; i++) {
-      Serial.print(digits[i]);
-    }
-    Serial.println(" ");
-
-    if (isMatch) {
-      Serial.println("** Correct Passcode **");
-    } else {
-      Serial.println("-- Incorrect Passcode --");
-    }
-    passcodeIdx = 0;
+  switch (currentMode){
+    case Mode::LOCKED:
+      if (passcodeIdx == passcodeLength) {
+        const bool isMatch = keylock.passcodeMatch(digits);
+        if (isMatch) {
+          Serial.println("** Correct Passcode **");
+        } else {
+          Serial.println("-- Incorrect Passcode --");
+        }
+        passcodeIdx = 0;
+      }
+      break;
+    case Mode::SET:
+      if (passcodeIdx == passcodeLength) {
+        keylock.changePasscode(passcode, digits);
+        currentMode = Mode::LOCKED;
+        Serial.println("## Password Set ##");
+        passcodeIdx = 0;
+      }
   }
 }
