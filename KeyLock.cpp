@@ -3,7 +3,7 @@
 #include <cstddef>
 #include <cstring>
 
-KeyLock::KeyLock(const int (&passcode)[PASSCODE_MAX_LENGTH],
+KeyLock::KeyLock(const char (&passcode)[PASSCODE_MAX_LENGTH],
                  std::size_t passcode_length)
     : _passcode_length(passcode_length) {
 
@@ -15,10 +15,10 @@ KeyLock::KeyLock(const int (&passcode)[PASSCODE_MAX_LENGTH],
   }
 }
 
-bool KeyLock::passcodeMatch(const int (&input)[PASSCODE_MAX_LENGTH]) {
+bool KeyLock::passcodeMatch(const char (&input)[PASSCODE_MAX_LENGTH]) {
 
   // Copying one digit at a time
-  for (int i = 0; i < PASSCODE_MAX_LENGTH; i++) {
+  for (int i = 0; i < this->_passcode_length; i++) {
     if (input[i] != this->_passcode[i]) {
       return false;
     }
@@ -27,12 +27,12 @@ bool KeyLock::passcodeMatch(const int (&input)[PASSCODE_MAX_LENGTH]) {
   return true;
 }
 
-bool KeyLock::changePasscode(const int (&previous)[PASSCODE_MAX_LENGTH],
-                             const int (&new_pass)[PASSCODE_MAX_LENGTH]) {
+bool KeyLock::changePasscode(const char (&previous)[PASSCODE_MAX_LENGTH],
+                             const char (&new_pass)[PASSCODE_MAX_LENGTH]) {
   if (this->passcodeMatch(previous)) {
 
     // Copying one digit at a time
-    for (int i = 0; i < PASSCODE_MAX_LENGTH; i++) {
+    for (int i = 0; i < this->_passcode_length; i++) {
       _passcode[i] = new_pass[i];
     }
   } else {
@@ -52,10 +52,8 @@ void KeyLock::debug() {
   Serial.println(this->_passcode_length);
 
   Serial.print("Passcode is ");
-  for (int i = 0; i < PASSCODE_MAX_LENGTH; i++) {
-    if (this->_passcode[i] >= 0){
-        Serial.print(this->_passcode[i]);
-    }
+  for (int i = 0; i < this->_passcode_length; i++) {
+      Serial.print(this->_passcode[i]);
   }
   Serial.println(" ");
 }
