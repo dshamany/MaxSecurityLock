@@ -1,5 +1,7 @@
 #include <Keypad.h>
 
+#include "Buzzer.h"
+#include "Led.h"
 #include "KeyLock.h"
 #include "pinout.h"
 
@@ -32,6 +34,20 @@ KeyLock keylock(passcode, passcodeLength);
 
 bool printedDebug = false;
 
+// Led & Buzzer
+constexpr uint8_t buzzPin = 0;
+constexpr uint8_t ledPinR = 5;
+constexpr uint8_t ledPinG = 6;
+constexpr uint8_t ledPinB = 7;
+unsigned long now;
+unsigned long nextLedTrigger = 0;
+unsigned long ledLoopDuration = 1000;
+unsigned long nextBuzzerTrigger = 0;
+unsigned long buzzerLoopDuration = 1000;
+
+Buzzer buzzer(buzzPin);
+Led led(ledPinR, ledPinG, ledPinB);
+
 void setup() {
   Serial.begin(9600);
   delay(100);
@@ -43,14 +59,29 @@ void setup() {
   }
 }
 
-/*
-All pins INPUT_PULLUP == HIGH.
-Loop through COLUMNS and switch one by one to OUTPUT LOW.
-If a row turns LOW as well we can pinpoint button.
-*/
+static int color = 0;
+
 void loop() {
   updateKeypadStates();
 
+  now = millis();
+
+  buzzer.update();
+  if (now >= nextBuzzerTrigger) {
+    buzzer.turnOnFor(50);
+    nextBuzzerTrigger = now + buzzerLoopDuration;
+  }
+
+  led.update();
+  if (now >= nextLedTrigger) {
+    Serial.println(color);
+    if (color == 0) led.setColorRed();
+    if (color == 1) led.setColorGreen();
+    if (color == 2) led.setColorBlue();
+    color = (color + 1) % 3;
+    led.toggle();
+    nextLedTrigger = now + ledLoopDuration;
+  }
   delay(10);
 }
 
