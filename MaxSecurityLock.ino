@@ -35,22 +35,20 @@ KeyLock keylock(passcode, passcodeLength);
 bool printedDebug = false;
 
 // Led & Buzzer
-constexpr uint8_t buzzPin = 0;
-constexpr uint8_t ledPinR = 5;
-constexpr uint8_t ledPinG = 6;
-constexpr uint8_t ledPinB = 7;
+constexpr uint8_t buzzPin = BUZZ_PIN;
+constexpr uint8_t ledPinR = RGB_RED;
+constexpr uint8_t ledPinG = RGB_GRN;
+constexpr uint8_t ledPinB = RGB_BLU;
 unsigned long now;
 unsigned long nextLedTrigger = 0;
 unsigned long ledLoopDuration = 1000;
-unsigned long nextBuzzerTrigger = 0;
-unsigned long buzzerLoopDuration = 1000;
 
 Buzzer buzzer(buzzPin);
 Led led(ledPinR, ledPinG, ledPinB);
 
 void setup() {
-  Serial.begin(9600);
-  delay(100);
+  Serial.begin(115200);
+  delay(500);
   Serial.println("BOOT!");
 
   if (currentMode == Mode::SET) {
@@ -63,25 +61,8 @@ static int color = 0;
 
 void loop() {
   updateKeypadStates();
-
-  now = millis();
-
   buzzer.update();
-  if (now >= nextBuzzerTrigger) {
-    buzzer.turnOnFor(50);
-    nextBuzzerTrigger = now + buzzerLoopDuration;
-  }
-
   led.update();
-  if (now >= nextLedTrigger) {
-    Serial.println(color);
-    if (color == 0) led.setColorRed();
-    if (color == 1) led.setColorGreen();
-    if (color == 2) led.setColorBlue();
-    color = (color + 1) % 3;
-    led.toggle();
-    nextLedTrigger = now + ledLoopDuration;
-  }
   delay(10);
 }
 
@@ -109,8 +90,14 @@ void updateKeypadStates() {
         const bool isMatch = keylock.passcodeMatch(digits);
         if (isMatch) {
           Serial.println("** Correct Passcode **");
+          buzzer.turnOnFor(500);
+          led.setColorGreen();
+          led.turnOnFor(500);
         } else {
           Serial.println("-- Incorrect Passcode --");
+          buzzer.turnOnFor(100);
+          led.setColorRed();
+          led.turnOnFor(100);
         }
         passcodeIdx = 0;
       }
@@ -120,6 +107,9 @@ void updateKeypadStates() {
         keylock.changePasscode(passcode, digits);
         currentMode = Mode::LOCKED;
         Serial.println("## Password Set ##");
+        buzzer.turnOnFor(500);
+        led.setColorBlue();
+        led.turnOnFor(500);
         passcodeIdx = 0;
       }
   }
