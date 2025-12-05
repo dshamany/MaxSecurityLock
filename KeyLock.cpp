@@ -27,7 +27,7 @@ bool KeyLock::passcodeMatch(const char (&input)[PASSCODE_MAX_LENGTH]) {
   return true;
 }
 
-bool KeyLock::changePasscode(const char (&previous)[PASSCODE_MAX_LENGTH],
+bool KeyLock::changePasscode(char (&previous)[PASSCODE_MAX_LENGTH],
                              const char (&new_pass)[PASSCODE_MAX_LENGTH]) {
   if (this->passcodeMatch(previous)) {
 
@@ -35,12 +35,15 @@ bool KeyLock::changePasscode(const char (&previous)[PASSCODE_MAX_LENGTH],
     for (int i = 0; i < this->_passcode_length; i++) {
       _passcode[i] = new_pass[i];
     }
+
+    memcpy(previous, new_pass, PASSCODE_MAX_LENGTH);
   } else {
     return false;
   }
 
   return true;
 }
+
 
 bool KeyLock::try_lock() { return true; }
 

@@ -14,7 +14,7 @@ public:
   KeyLock(const char (&passcode)[PASSCODE_MAX_LENGTH],
           std::size_t passcode_length = PASSCODE_MAX_LENGTH);
   bool passcodeMatch(const char (&input)[PASSCODE_MAX_LENGTH]);
-  bool changePasscode(const char (&previous)[PASSCODE_MAX_LENGTH],
+  bool changePasscode(char (&previous)[PASSCODE_MAX_LENGTH],
                       const char (&new_pass)[PASSCODE_MAX_LENGTH]);
   bool try_lock();
   bool try_unlock();
