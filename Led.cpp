@@ -16,6 +16,9 @@ void Led::turnOn() {
 
 void Led::turnOff() {
   _state = false;
+  _r = LOW;
+  _g = LOW;
+  _b = LOW;
   digitalWrite(_pinR, _r);
   digitalWrite(_pinG, _g);
   digitalWrite(_pinB, _b);
