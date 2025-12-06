@@ -45,12 +45,14 @@ void setup() {
 }
 
 static int color = 0;
+unsigned long autoLockDuration = 10000UL;
 
 void loop() {
 
   updateKeypadStates();
   buzzer.update();
   led.update();
+  autoLock();
 }
 
 void clearDigits() {
@@ -58,10 +60,18 @@ void clearDigits() {
   memcpy(digits, cleared_digits, PASSCODE_MAX_LENGTH);
 }
 
-void handleKeyEntry() {
+void handleKeyEntry(char key) {
+  buzzer.turnOnFor(100);
+  led.setColorBlue();
+  led.turnOnFor(100);
+  digits[passcodeIdx++] = key;
+}
+
+void handleSubmission() {
   const bool isMatch = keylock.passcodeMatch(digits);
   if (currentMode == Mode::LOCKED && isMatch) {
     currentMode = Mode::UNLOCKED;
+    autoLockDuration = millis();
     led.setColorGreen();
     led.turnOnFor(500);
     buzzer.turnOnFor(500);
@@ -70,7 +80,8 @@ void handleKeyEntry() {
     keylock.changePasscode(passcode, digits);
     currentMode = Mode::LOCKED;
     buzzer.turnOnFor(500);
-    led.turnOff(); // Because the mode sets it to blue
+    led.setColorGreen();
+    led.turnOnFor(500);
     Serial.println("## Passcode Set ##");
   } else {
     currentMode = Mode::LOCKED;
@@ -82,36 +93,50 @@ void handleKeyEntry() {
   clearDigits();
 }
 
+void handleClearDigits() {
+  clearDigits();
+  buzzer.turnOnFor(200);
+  led.setColorBlue();
+  led.turnOnFor(200);
+  Serial.println("Cleared");
+}
+
 void changePasscode() {
   currentMode = Mode::SET;
   led.setColorBlue();
   led.turnOn();
+  Serial.println("## Set Passcode ##");
+}
+
+void autoLock() {
+  if (millis() - autoLockDuration >= 10000UL && currentMode == Mode::UNLOCKED) {
+    currentMode = Mode::LOCKED;
+    buzzer.turnOnFor(100);
+    led.setColorRed();
+    led.turnOnFor(100);
+    Serial.println("Locked");
+  }
 }
 
 void updateKeypadStates() {
   char key = keypad.getKey();
   KeyState state = keypad.getState(); 
 
-  if (key) {
+  if (key && state != HOLD) {
     Serial.println(key);
     if (key >= '0' && key <= '9') {
-      buzzer.turnOnFor(100);
-      led.setColorBlue();
-      led.turnOnFor(100);
-      digits[passcodeIdx++] = key;
+      handleKeyEntry(key);
     } else if (key == '#') {
-      handleKeyEntry();
+      handleSubmission();
       passcodeIdx = 0;
     } else if (key == '*') {
-      clearDigits();
-      buzzer.turnOnFor(200);
-      led.setColorBlue();
-      led.turnOn();
+      handleClearDigits();
     }
   }
 
   if (state == HOLD && currentMode == Mode::UNLOCKED) {
     changePasscode();
     passcodeIdx = 0;
+    clearDigits();
   }
 }
