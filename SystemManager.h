@@ -2,15 +2,26 @@
 
 #include <Keypad.h>
 
+#ifdef CLOSED
+#undef CLOSED
+#endif
+
+#include <Arduino.h>
+#include "thingProperties.h"
+
 #include "pinout.h"
 #include "Buzzer.h"
 #include "Led.h"
-#include "KeyLock.h";
+#include "KeyLock.h"
+
+
+
 
 enum Mode {
   LOCKED,
   UNLOCKED,
-  SET
+  SET,
+  CONFIRM
 };
 
 #define ROWS 4
@@ -22,10 +33,12 @@ uint8_t rowPins[ROWS] = {PIN_ROW_1, PIN_ROW_2, PIN_ROW_3, PIN_ROW_4};
 uint8_t colPins[COLS] = {PIN_COL_1, PIN_COL_2, PIN_COL_3};
 Keypad keypad = Keypad(makeKeymap(keyMap), rowPins, colPins, ROWS, COLS);
 
+char clearedDigits[PASSCODE_MAX_LENGTH] = {' ',' ',' ',' ',' ',' ', ' ', ' '};
 char passcode[PASSCODE_MAX_LENGTH] = { '1', '2', '3', '4', ' ', ' ', ' ', ' ' };
-const int passcodeLength = 4;
+const int passcodeLength = 8;
 int passcodeIdx = 0;
 char digits[PASSCODE_MAX_LENGTH];
+char confirm[PASSCODE_MAX_LENGTH];
 
 KeyLock keylock(passcode, passcodeLength);
 
@@ -45,15 +58,26 @@ unsigned long autoLockDurationMs = 10'000UL;
 struct SystemManager {
   
   static void clearDigits() {
-    char cleared_digits[PASSCODE_MAX_LENGTH] = {' ',' ',' ',' ',' ',' ', ' ', ' '};
-    memcpy(digits, cleared_digits, PASSCODE_MAX_LENGTH);
+    passcodeIdx = 0;
+    memcpy(digits, clearedDigits, PASSCODE_MAX_LENGTH);
+  }
+
+  static void clearConfirm() {
+    passcodeIdx = 0;
+    memcpy(confirm, clearedDigits, PASSCODE_MAX_LENGTH);
   }
 
   static void handleKeyEntry(char key) {
+
+    if (currentMode == Mode::CONFIRM) {
+      confirm[passcodeIdx++] = key;
+    } else {
+      digits[passcodeIdx++] = key;
+    }
+
     buzzer.turnOnFor(100);
     led.setColorBlue();
     led.turnOnFor(100);
-    digits[passcodeIdx++] = key;
   }
 
   static void handleSubmission() {
@@ -65,21 +89,35 @@ struct SystemManager {
       led.turnOnFor(500);
       buzzer.turnOnFor(500);
       Serial.println("** Correct Passcode **");
+      // Update numUnlocks on Arduino Cloud
+      isLocked = false;
+      numUnlocks += 1;
     } else if (currentMode == Mode::SET) {
+      buzzer.turnOnFor(500);
+      led.setColorBlue();
+      led.turnOnFor(500);
+      confirmPasscode();
+    } else if (currentMode == Mode::CONFIRM && KeyLock::passcodeCompare(digits, confirm)) {
       keylock.changePasscode(passcode, digits);
-      currentMode = Mode::LOCKED;
+      lock();
       buzzer.turnOnFor(500);
       led.setColorGreen();
       led.turnOnFor(500);
       Serial.println("## Passcode Set ##");
+      clearConfirm();
+      clearDigits();
+    } else if (currentMode == Mode::CONFIRM) { 
+      Serial.println("## Passcode Mismatch ##");
     } else {
-      currentMode = Mode::LOCKED;
+      lock();
       led.setColorRed();
       led.turnOnFor(200);
       buzzer.turnOnFor(200);
       Serial.println("-- Incorrect Passcode --");
+      // update numWrongAttempts in Arduino Cloud
+      numWrongAttempts += 1;
     }
-    clearDigits();
+    passcodeIdx = 0;
   }
 
   static void handleClearDigits() {
@@ -91,20 +129,37 @@ struct SystemManager {
   }
 
   static void changePasscode() {
+    clearDigits();
+    clearConfirm();
     currentMode = Mode::SET;
     led.setColorBlue();
     led.turnOn();
     Serial.println("## Set Passcode ##");
   }
 
+  static void confirmPasscode() {
+    currentMode = Mode::CONFIRM;
+    led.setColorBlue();
+    led.turnOn();
+    Serial.println("## Confirm Passcode ##");
+  }
+
+  static void lock() {
+    currentMode = Mode::LOCKED;
+    buzzer.turnOnFor(100);
+    led.setColorRed();
+    led.turnOnFor(100);
+    Serial.println("Locked");
+    clearDigits();
+    clearConfirm();
+    // Update isLocked boolean in Arduino Cloud
+    isLocked = true;
+  }
+
   static void autoLock() {
     unsigned long tenMilliSeconds = 10'000UL;
     if (millis() - autoLockDurationMs >= tenMilliSeconds && currentMode == Mode::UNLOCKED) {
-      currentMode = Mode::LOCKED;
-      buzzer.turnOnFor(100);
-      led.setColorRed();
-      led.turnOnFor(100);
-      Serial.println("Locked");
+      lock();
     }
   }
 
@@ -127,8 +182,14 @@ struct SystemManager {
     if (state == HOLD && currentMode == Mode::UNLOCKED) {
       changePasscode();
       passcodeIdx = 0;
-      clearDigits();
     }
+  }
+
+  static void setup() {
+    clearDigits();
+    clearConfirm();
+    keylock.debug();
+    lock();
   }
 
   static void run() {
@@ -136,6 +197,14 @@ struct SystemManager {
     buzzer.update();
     led.update();
     autoLock();
+  }
+
+  static void onCloudConnect() {
+    // e.g. light LED, print to LCD, show toast on serial, etc.
+    led.setColorBlue();
+    led.turnOnFor(100);
+    buzzer.turnOnFor(100);
+    Serial.println("Connected to Arduino Cloud");
   }
 
 };

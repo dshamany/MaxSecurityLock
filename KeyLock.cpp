@@ -18,12 +18,23 @@ KeyLock::KeyLock(const char (&passcode)[PASSCODE_MAX_LENGTH],
 bool KeyLock::passcodeMatch(const char (&input)[PASSCODE_MAX_LENGTH]) {
 
   // Copying one digit at a time
-  for (int i = 0; i < this->_passcode_length; i++) {
+  for (int i = 0; i < PASSCODE_MAX_LENGTH; i++) {
     if (input[i] != this->_passcode[i]) {
       return false;
     }
   }
 
+  return true;
+}
+
+bool KeyLock::passcodeCompare(const char *p1, const char *p2) {
+
+  // Copying one digit at a time
+  for (int i = 0; i < PASSCODE_MAX_LENGTH; i++) {
+    if (p1[i] != p2[i]) {
+      return false;
+    }
+  }
   return true;
 }
 
