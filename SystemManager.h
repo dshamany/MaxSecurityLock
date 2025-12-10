@@ -106,8 +106,6 @@ struct SystemManager {
       Serial.println("## Passcode Set ##");
       clearConfirm();
       clearDigits();
-    } else if (currentMode == Mode::CONFIRM) { 
-      Serial.println("## Passcode Mismatch ##");
     } else {
       lock();
       led.setColorRed();

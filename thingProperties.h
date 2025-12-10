@@ -7,7 +7,7 @@
 
 #include "secrets.h"
 
-const char DEVICE_LOGIN_NAME[]  = "beec71f3-3371-439c-8c51-baae29e7e484";
+const char DEVICE_LOGIN_NAME[]  = "a1fa7208-51cd-4315-954f-789c7a47e580";
 
 const char SSID[]               = SECRET_SSID;    // Network SSID (name)
 const char PASS[]               = SECRET_OPTIONAL_PASS;    // Network password (use for WPA, or use as key for WEP)
