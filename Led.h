@@ -1,6 +1,12 @@
 #pragma once
 #include <Arduino.h>
 
+enum LEDColor {
+  RED,
+  GREEN,
+  BLUE
+};
+
 class Led {
   uint8_t _pinR;
   uint8_t _pinG;
@@ -16,9 +22,11 @@ public:
   void turnOnFor(uint16_t duration);
   void turnOn();
   void turnOff();
+  void blink(uint16_t duration, int count);
   void toggle();
   void update();
   void setColorRed();
   void setColorGreen();
   void setColorBlue();
+  void setColor(LEDColor color);
 };

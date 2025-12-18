@@ -1,9 +1,9 @@
 #include "thingProperties.h"
 #include "SystemManager.h"
 
-#ifdef CLOSED
-#undef CLOSED
-#endif
+// #ifdef CLOSED
+// #undef CLOSED
+// #endif
 
 void setup() {
   Serial.begin(115200);

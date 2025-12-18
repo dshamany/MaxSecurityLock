@@ -30,6 +30,17 @@ void Led::turnOnFor(uint16_t duration) {
   _timeOff = millis() + duration;
 }
 
+void Led::blink(uint16_t duration, int count) {
+
+  for (int i = 1; i <= count; i++) {
+    int duration_multiplier = duration * i;
+    this->turnOn();
+    _timerOn = true;
+    _timeOff = millis() + duration_multiplier;
+  }
+  turnOff();
+}
+
 void Led::toggle() {
   Serial.print(_state);
   Serial.print("    ");
@@ -61,4 +72,20 @@ void Led::setColorBlue() {
   _r = LOW;
   _g = LOW;
   _b = HIGH;
+}
+
+void Led::setColor(LEDColor color) {
+  switch (color) {
+    case LEDColor::RED:
+      setColorRed();
+      break;
+    case LEDColor::GREEN:
+      setColorGreen();
+      break;
+    case LEDColor::BLUE:
+      setColorBlue();
+      break;
+    default:
+      break;
+  }
 }
