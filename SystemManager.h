@@ -70,13 +70,17 @@ struct SystemManager {
   static void handleKeyEntry(char key) {
 
     if (currentMode == Mode::CONFIRM) {
+      led.setColorGreen();
       confirm[passcodeIdx++] = key;
+    } else if (currentMode == Mode::SET) {
+      led.setColorGreen();
+      digits[passcodeIdx++] = key;
     } else {
+      led.setColorBlue();
       digits[passcodeIdx++] = key;
     }
 
     buzzer.turnOnFor(100);
-    led.setColorBlue();
     led.turnOnFor(100);
   }
 
