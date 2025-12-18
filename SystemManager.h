@@ -71,18 +71,15 @@ struct SystemManager {
 
   static void handleKeyEntry(char key) {
 
-    switch (currentMode) {
-      case Mode::SET:
-        led.setColorGreen();
-        digits[passcodeIdx++];
-        break;
-      case Mode::CONFIRM:
-        led.setColorGreen();
-        confirm[passcodeIdx++];
-        break;
-      default:
-        led.setColorBlue();
-        digits[passcodeIdx++];
+    if (currentMode == Mode::CONFIRM) {
+      led.setColorGreen();
+      confirm[passcodeIdx++] = key;
+    } else if (currentMode == Mode::SET) {
+      led.setColorGreen();
+      digits[passcodeIdx++] = key;
+    } else {
+      led.setColorBlue();
+      digits[passcodeIdx++] = key;
     }
 
     buzzer.turnOnFor(100);
